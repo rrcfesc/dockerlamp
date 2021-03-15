@@ -1,4 +1,6 @@
-# 
+# About
+
+This image supports the instalation of Magento and Sylius
 
 
 ## What does provide this image?
