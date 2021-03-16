@@ -1,9 +1,6 @@
-FROM php:7.4-apache
+FROM php:7.3-apache
 
 LABEL maintainer="rrcfesc@gmail.com"
-
-ENV IDEKEY "PHPSTORM"
-ENV REMOTEPORT "9000"
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
