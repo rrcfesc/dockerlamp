@@ -2,9 +2,6 @@ FROM php:7.4-apache
 
 LABEL maintainer="rrcfesc@gmail.com"
 
-ENV IDEKEY "PHPSTORM"
-ENV REMOTEPORT "9000"
-
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
@@ -29,10 +26,10 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libtidy-dev \
     libxslt-dev \
     libxpm-dev \
-    telnet nmap net-tools inetutils-ping\
+    telnet nmap net-tools inetutils-ping default-mysql-client\
     pkg-config sshpass nodejs yarn  -y
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --1
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
 RUN docker-php-ext-install -j$(nproc) zip
 RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-configure hash --with-mhash
