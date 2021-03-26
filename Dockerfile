@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:8.0-apache
 
 LABEL maintainer="rrcfesc@gmail.com"
 
@@ -26,6 +26,7 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libtidy-dev \
     libxslt-dev \
     libxpm-dev \
+    libpq-dev \
     telnet nmap net-tools inetutils-ping default-mysql-client\
     pkg-config sshpass nodejs yarn  -y
 
@@ -33,12 +34,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN docker-php-ext-install -j$(nproc) zip
 RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-configure hash --with-mhash
-RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif intl json \
-    mbstring mysqli opcache pdo pdo_mysql simplexml soap \
-    xml xsl
-RUN pecl install amqp \
-    && pecl install mongodb \
-    && docker-php-ext-enable amqp \
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-configure json
+RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp intl mbstring mysqli opcache \
+        pdo pdo_mysql pgsql pdo_pgsql simplexml soap xml xsl
+RUN pecl install mongodb \
     && docker-php-ext-enable mongodb
 
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
