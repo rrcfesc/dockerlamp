@@ -44,6 +44,11 @@ RUN pecl install amqp \
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD extraFiles/php.ini /usr/local/etc/php
 
+RUN a2enmod rewrite \
+    && a2enmod proxy \
+    && a2enmod proxy_fcgi\
+    && a2enmod ssl
+
 WORKDIR /var/www/html
 
 EXPOSE 80 443
