@@ -1,4 +1,4 @@
-FROM php:7.2-apache
+FROM php:7.1-apache
 
 LABEL maintainer="rrcfesc@gmail.com"
 
@@ -29,13 +29,13 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     telnet nmap net-tools inetutils-ping default-mysql-client\
     pkg-config sshpass nodejs yarn  -y
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --1
 RUN docker-php-ext-install -j$(nproc) zip
 RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-configure hash --with-mhash
 RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif intl json \
     mbstring mysqli opcache pdo pdo_mysql simplexml soap \
-    xml xsl
+    xml xsl zip
 RUN pecl install amqp \
     && pecl install mongodb \
     && docker-php-ext-enable amqp \
