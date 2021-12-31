@@ -1,4 +1,4 @@
-FROM php:8.0-apache
+FROM php:8.1-apache
 
 LABEL maintainer="rrcfesc@gmail.com"
 
@@ -20,7 +20,7 @@ RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
 RUN update-locale LANG=en_US.UTF-8
 RUN echo "export LANG=en_US.UTF-8\nexport LANGUAGE=en_US.UTF-8\nexport LC_ALL=en_US.UTF-8\nexport PYTHONIOENCODING=UTF-8" | tee -a /etc/bash.bashrc
 RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
-    gcc g++ git make libcurl3-openssl-dev\
+    gcc g++ make libcurl3-openssl-dev\
     libbz2-dev libicu-dev libxml2-dev libxslt1-dev \
     telnet zip libonig-dev\
     zlib1g-dev libzip-dev \
