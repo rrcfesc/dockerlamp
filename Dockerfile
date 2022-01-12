@@ -48,7 +48,7 @@ RUN a2enmod rewrite \
     && a2enmod proxy \
     && a2enmod proxy_fcgi\
     && a2enmod ssl
-
+RUN apt install git -y
 WORKDIR /var/www/html
 
 EXPOSE 80 443
