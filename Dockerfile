@@ -36,13 +36,13 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
-    install-php-extensions amqp intl json
+    install-php-extensions amqp intl
 RUN docker-php-ext-install -j$(nproc) zip gd
 RUN docker-php-ext-configure hash --with-mhash
 RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif mbstring mysqli opcache \
         pdo pdo_mysql pgsql pdo_pgsql simplexml soap xml xsl
 RUN pecl install mongodb && docker-php-ext-enable mongodb
-
+RUN npm install npm@latest -g
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD extraFiles/php.ini /usr/local/etc/php
 
