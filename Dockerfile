@@ -34,10 +34,9 @@ RUN docker-php-ext-install -j$(nproc) zip
 RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-configure hash --with-mhash
 RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif intl json \
-    mbstring mysqli opcache pdo pdo_mysql simplexml soap \
+    mbstring mysqli opcache pcntl pdo pdo_mysql  simplexml soap \
     xml xsl
-RUN pecl install amqp \
-    && pecl install mongodb \
+RUN pecl install amqp mongodb \
     && docker-php-ext-enable amqp \
     && docker-php-ext-enable mongodb
 
