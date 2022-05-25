@@ -4,6 +4,8 @@ LABEL maintainer="rrcfesc@gmail.com"
 
 ARG DEBIAN_FRONTEND=noninteractive \
     TZ=America/Mexico_City
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_HOME /root/.composer
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
@@ -40,7 +42,7 @@ RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
 RUN docker-php-ext-install -j$(nproc) zip gd
 RUN docker-php-ext-configure hash --with-mhash
 RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif mbstring mysqli opcache \
-        pdo pdo_mysql pgsql pdo_pgsql simplexml soap xml xsl
+        pdo pdo_mysql pcntl pgsql pdo_pgsql simplexml soap xml xsl
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 RUN npm install npm@latest -g
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
