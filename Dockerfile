@@ -2,6 +2,11 @@ FROM php:7.4-apache
 
 LABEL maintainer="rrcfesc@gmail.com"
 
+ARG DEBIAN_FRONTEND=noninteractive \
+    TZ=America/Mexico_City
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_HOME /root/.composer
+
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
@@ -28,7 +33,7 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libxpm-dev \
     telnet nmap net-tools inetutils-ping default-mysql-client\
     pkg-config sshpass nodejs yarn  -y
-
+RUN npm install -g npm
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
 RUN docker-php-ext-install -j$(nproc) zip
 RUN docker-php-ext-install -j$(nproc) gd
@@ -47,7 +52,7 @@ RUN a2enmod rewrite \
     && a2enmod proxy \
     && a2enmod proxy_fcgi\
     && a2enmod ssl
-RUN apt install git -y
+
 WORKDIR /var/www/html
 
 EXPOSE 80 443
