@@ -4,6 +4,8 @@ LABEL maintainer="rrcfesc@gmail.com"
 
 ARG DEBIAN_FRONTEND=noninteractive \
     TZ=America/Mexico_City
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_HOME /root/.composer
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
@@ -33,6 +35,7 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libpq-dev \
     telnet nmap net-tools inetutils-ping default-mysql-client\
     pkg-config sshpass nodejs yarn  -y
+RUN npm install -g npm
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
