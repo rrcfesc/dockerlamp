@@ -35,7 +35,7 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libpq-dev \
     telnet nmap net-tools inetutils-ping default-mysql-client\
     pkg-config sshpass nodejs yarn  -y
-RUN npm install -g npm
+RUN npm install -g npm && npm install -g npm@latest
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
@@ -48,7 +48,7 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD extraFiles/php.ini /usr/local/etc/php
-
+RUN cd /var/www/ && mkdir .composer && chown www-data: .composer
 WORKDIR /var/www/html
 
-EXPOSE 80 443
+EXPOSE 80 443 5173
