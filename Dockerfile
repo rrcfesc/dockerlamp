@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.2-apache
 
 LABEL maintainer="rrcfesc@gmail.com"
 
@@ -32,7 +32,7 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libxpm-dev \
     libpq-dev \
     telnet nmap net-tools inetutils-ping default-mysql-client\
-    pkg-config sshpass nodejs yarn  -y
+    pkg-config sshpass nodejs npm yarn  -y
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
