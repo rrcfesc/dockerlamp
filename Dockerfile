@@ -7,11 +7,10 @@ ARG DEBIAN_FRONTEND=noninteractive \
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_HOME /root/.composer
 
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
+RUN apt update && apt upgrade -y && apt install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
+RUN curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
 RUN set -x; \
     locale-gen en_US.UTF-8 && \
     update-locale && \
@@ -34,7 +33,7 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libxpm-dev \
     libpq-dev \
     telnet nmap net-tools inetutils-ping default-mysql-client\
-    pkg-config sshpass nodejs npm yarn  -y
+    pkg-config sshpass nodejs yarn  -y
 RUN npm install -g npm && npm install -g npm@latest
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
