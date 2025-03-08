@@ -43,7 +43,7 @@ RUN docker-php-ext-install -j$(nproc) zip gd
 RUN docker-php-ext-configure hash --with-mhash
 RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif mbstring mysqli opcache \
         pdo pdo_mysql pgsql pdo_pgsql simplexml soap xml xsl
-RUN pecl install mongodb && docker-php-ext-enable mongodb
+RUN pecl install mongodb && docker-php-ext-enable mongodb && pecl install redis && docker-php-ext-enable redis
 
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD extraFiles/php.ini /usr/local/etc/php
