@@ -10,7 +10,7 @@ ENV COMPOSER_HOME /root/.composer
 RUN apt update && apt upgrade -y && apt install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
+RUN curl -sL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
 RUN set -x; \
     locale-gen en_US.UTF-8 && \
     update-locale && \
@@ -50,4 +50,4 @@ ADD extraFiles/php.ini /usr/local/etc/php
 RUN cd /var/www/ && mkdir .composer && chown www-data: .composer
 WORKDIR /var/www/html
 
-EXPOSE 80 443 5173
+EXPOSE 80 8080 443 5173
