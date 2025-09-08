@@ -8,8 +8,10 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_HOME /root/.composer
 
 RUN apt update && apt upgrade -y && apt install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/yarn-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/yarn-archive-keyring.gpg] https://dl.yarnpkg.com/debian stable main" \
+    | tee /etc/apt/sources.list.d/yarn.list
+
 RUN curl -sL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
 RUN set -x; \
     locale-gen en_US.UTF-8 && \
@@ -32,6 +34,8 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libxslt-dev \
     libxpm-dev \
     libpq-dev \
+    libmagickwand-dev \
+    imagemagick \
     telnet nmap net-tools inetutils-ping default-mysql-client\
     pkg-config sshpass nodejs yarn  -y
 RUN npm install -g npm && npm install -g npm@latest
@@ -43,7 +47,7 @@ RUN docker-php-ext-install -j$(nproc) zip gd
 RUN docker-php-ext-configure hash --with-mhash
 RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif mbstring mysqli opcache \
         pdo pdo_mysql pgsql pdo_pgsql simplexml soap xml xsl
-RUN pecl install mongodb && docker-php-ext-enable mongodb && pecl install redis && docker-php-ext-enable redis
+RUN pecl install mongodb && docker-php-ext-enable mongodb && pecl install redis && docker-php-ext-enable redis && pecl install imagick && docker-php-ext-enable imagick
 
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD extraFiles/php.ini /usr/local/etc/php
