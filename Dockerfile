@@ -5,10 +5,13 @@ LABEL maintainer="rrcfesc@gmail.com"
 ARG DEBIAN_FRONTEND=noninteractive \
     TZ=America/Mexico_City
 
-RUN apt update && apt upgrade && apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN curl -sL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
+RUN apt update && apt upgrade -y && apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
+
+RUN curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/yarn-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/yarn-archive-keyring.gpg] https://dl.yarnpkg.com/debian stable main" \
+    | tee /etc/apt/sources.list.d/yarn.list
+
+RUN curl -sL https://deb.nodesource.com/setup_24.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
 RUN set -x; \
     locale-gen en_US.UTF-8 && \
     update-locale && \
@@ -30,17 +33,18 @@ RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libxslt-dev \
     libxpm-dev \
     libpq-dev \
+    libmagickwand-dev \
+    imagemagick \
     telnet nmap net-tools inetutils-ping default-mysql-client\
-    pkg-config sshpass nodejs yarn  -y
+    pkg-config sshpass nodejs yarn  -y \
+    && rm -rf /var/lib/apt/lists/*
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
-    install-php-extensions amqp intl json
+
 RUN docker-php-ext-install -j$(nproc) zip gd
 RUN docker-php-ext-configure hash --with-mhash
 RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif mbstring mysqli opcache \
         pdo pdo_mysql pgsql pdo_pgsql simplexml soap xml xsl
-RUN pecl install mongodb && docker-php-ext-enable mongodb
+RUN pecl install amqp && docker-php-ext-enable amqp && pecl install mongodb && docker-php-ext-enable mongodb && pecl install redis && docker-php-ext-enable redis && pecl install imagick && docker-php-ext-enable imagick
 
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD extraFiles/php.ini /usr/local/etc/php
