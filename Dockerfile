@@ -2,16 +2,19 @@ FROM php:7.4-apache
 
 LABEL maintainer="rrcfesc@gmail.com"
 
-ARG DEBIAN_FRONTEND=noninteractive \
-    TZ=America/Mexico_City
-ENV COMPOSER_ALLOW_SUPERUSER 1
-ENV COMPOSER_HOME /root/.composer
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TZ=America/Mexico_City
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=America/Mexico_City \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_HOME=/root/.composer
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
+RUN curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
 RUN set -x; \
     locale-gen en_US.UTF-8 && \
     update-locale && \
@@ -21,7 +24,7 @@ RUN set -x; \
 RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
 RUN update-locale LANG=en_US.UTF-8
 RUN echo "export LANG=en_US.UTF-8\nexport LANGUAGE=en_US.UTF-8\nexport LC_ALL=en_US.UTF-8\nexport PYTHONIOENCODING=UTF-8" | tee -a /etc/bash.bashrc
-RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
+RUN apt-get install ca-certificates libmcrypt-dev libmagickwand-dev librabbitmq-dev \
     libbz2-dev libicu-dev libxml2-dev libxslt1-dev \
     telnet zip libonig-dev\
     zlib1g-dev libzip-dev \
@@ -41,10 +44,11 @@ RUN docker-php-ext-configure hash --with-mhash
 RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif intl json \
     mbstring mysqli opcache pcntl pdo pdo_mysql  simplexml soap \
     xml xsl
-RUN pecl install mcrypt-1.0.5 amqp mongodb \
-    && docker-php-ext-enable mcrypt \
-    && docker-php-ext-enable amqp \
-    && docker-php-ext-enable mongodb
+RUN pecl install mcrypt-1.0.5 && docker-php-ext-enable mcrypt
+
+RUN pecl install amqp && docker-php-ext-enable amqp
+
+RUN pecl install mongodb-1.10.0 && docker-php-ext-enable mongodb
 
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD extraFiles/php.ini /usr/local/etc/php
