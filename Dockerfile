@@ -42,7 +42,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN docker-php-ext-install -j$(nproc) zip gd
 RUN docker-php-ext-configure hash --with-mhash
-RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif mbstring mysqli opcache \
+RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif intl mbstring mysqli opcache \
         pdo pdo_mysql pgsql pdo_pgsql simplexml soap xml xsl
 RUN pecl install amqp && docker-php-ext-enable amqp && pecl install mongodb && docker-php-ext-enable mongodb && pecl install redis && docker-php-ext-enable redis && pecl install imagick && docker-php-ext-enable imagick
 
