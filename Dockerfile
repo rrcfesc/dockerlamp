@@ -1,54 +1,130 @@
+# syntax=docker/dockerfile:1
 FROM php:8.4-apache
 
-LABEL maintainer="rrcfesc@gmail.com"
+LABEL maintainer="rrcfesc@gmail.com" \
+      org.opencontainers.image.source="https://github.com/rrcfesc/dockerlamp" \
+      org.opencontainers.image.description="LAMP base image for PHP 8.4 (Symfony / Sylius / Magento)" \
+      org.opencontainers.image.licenses="MIT"
 
-ARG DEBIAN_FRONTEND=noninteractive \
-    TZ=America/Mexico_City
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    APACHE_DOCUMENT_ROOT=/var/www/html/public \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    NODE_MAJOR=24 \
+    PECL_AMQP=2.2.0 \
+    PECL_MONGODB=2.4.1 \
+    PECL_REDIS=6.3.0 \
+    PECL_IMAGICK=3.8.1
 
-RUN apt update && apt upgrade -y && apt-get install -y --no-install-recommends locales curl wget apt-utils tcl build-essential gnupg2 gnupg -y
+# 1) Minimal OS layer: locale, timezone and the few tools Composer really needs.
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        git \
+        locales \
+        unzip \
+        zip; \
+    sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen; \
+    locale-gen; \
+    ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime; \
+    echo "$TZ" > /etc/timezone; \
+    rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/yarn-archive-keyring.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/yarn-archive-keyring.gpg] https://dl.yarnpkg.com/debian stable main" \
-    | tee /etc/apt/sources.list.d/yarn.list
+# 2) Node.js + corepack. corepack ships yarn/pnpm, so no third-party apt repo
+#    or GPG key is needed for yarn. gnupg is only required to set up the
+#    NodeSource repo, so it is purged again right after (apt keeps verifying
+#    the repo with gpgv, which is part of apt itself).
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends gnupg; \
+    curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -; \
+    apt-get install -y --no-install-recommends nodejs; \
+    corepack enable; \
+    npm cache clean --force; \
+    apt-get purge -y --auto-remove gnupg; \
+    rm -rf /var/lib/apt/lists/* /root/.npm
 
-RUN curl -sL https://deb.nodesource.com/setup_24.x -o nodesource_setup.sh && chmod +x nodesource_setup.sh && ./nodesource_setup.sh && rm nodesource_setup.sh
-RUN set -x; \
-    locale-gen en_US.UTF-8 && \
-    update-locale && \
-    echo 'LANG="en_US.UTF-8"' > /etc/default/locale && \
-    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-    locale-gen en_US.UTF-8
-RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
-RUN update-locale LANG=en_US.UTF-8
-RUN echo "export LANG=en_US.UTF-8\nexport LANGUAGE=en_US.UTF-8\nexport LC_ALL=en_US.UTF-8\nexport PYTHONIOENCODING=UTF-8" | tee -a /etc/bash.bashrc
-RUN apt-get install libmcrypt-dev libmagickwand-dev librabbitmq-dev \
-    gcc g++ make libcurl3-openssl-dev\
-    libbz2-dev libicu-dev libxml2-dev libxslt1-dev \
-    telnet zip libonig-dev\
-    zlib1g-dev libzip-dev \
-    unzip vim curl libssl-dev libcurl4-openssl-dev \
-    libldap2-dev \
-    libfreetype6-dev libwebp-dev libgmp-dev libjpeg62-turbo-dev libpng-dev libgd-dev \
-    libtidy-dev \
-    libxslt-dev \
-    libxpm-dev \
-    libpq-dev \
-    libmagickwand-dev \
-    imagemagick \
-    telnet nmap net-tools inetutils-ping default-mysql-client\
-    pkg-config sshpass nodejs yarn  -y \
-    && rm -rf /var/lib/apt/lists/*
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --2
+# 3) Composer, straight from the official image.
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
-RUN docker-php-ext-install -j$(nproc) zip gd
-RUN docker-php-ext-configure hash --with-mhash
-RUN docker-php-ext-install -j$(nproc) bcmath bz2 calendar curl dom ftp exif intl mbstring mysqli opcache \
-        pdo pdo_mysql pgsql pdo_pgsql simplexml soap xml xsl
-RUN pecl install amqp && docker-php-ext-enable amqp && pecl install mongodb && docker-php-ext-enable mongodb && pecl install redis && docker-php-ext-enable redis && pecl install imagick && docker-php-ext-enable imagick
+# 4) PHP extensions. Build headers are installed, used and purged inside the
+#    same layer; ldd then tells us which runtime libraries the freshly built
+#    .so files actually need, so only those survive. Same approach the official
+#    php images use.
+RUN set -eux; \
+    savedAptMark="$(apt-mark showmanual)"; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        libbz2-dev \
+        libcurl4-openssl-dev \
+        libfreetype6-dev \
+        libicu-dev \
+        libjpeg62-turbo-dev \
+        libmagickwand-dev \
+        libpng-dev \
+        libpq-dev \
+        librabbitmq-dev \
+        libsasl2-dev \
+        libssl-dev \
+        libwebp-dev \
+        libxml2-dev \
+        libxslt1-dev \
+        libzip-dev; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-install -j"$(nproc)" \
+        bcmath \
+        bz2 \
+        calendar \
+        exif \
+        ftp \
+        gd \
+        intl \
+        mysqli \
+        pdo_mysql \
+        pdo_pgsql \
+        pgsql \
+        soap \
+        xsl \
+        zip; \
+    pecl install \
+        "amqp-${PECL_AMQP}" \
+        "mongodb-${PECL_MONGODB}" \
+        "redis-${PECL_REDIS}" \
+        "imagick-${PECL_IMAGICK}"; \
+    docker-php-ext-enable amqp mongodb redis imagick; \
+    apt-mark auto '.*' > /dev/null; \
+    apt-mark manual $savedAptMark > /dev/null; \
+    ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
+        | awk '/=>/ { so = $(NF-1); if (index(so, "/usr/local/") == 1) next; gsub("^/(usr/)?", "", so); printf "*%s\n", so }' \
+        | sort -u \
+        | xargs -r dpkg-query --search 2>/dev/null \
+        | cut -d: -f1 \
+        | sort -u \
+        | xargs -r apt-mark manual; \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+    rm -rf /var/lib/apt/lists/* /tmp/pear; \
+    php -m
+
+# 5) Apache modules and vhost. mod_rewrite is what .htaccess needs; without it
+#    every RewriteRule fails silently.
+RUN a2enmod rewrite headers expires
 
 COPY extraFiles/000-default.conf /etc/apache2/sites-available/000-default.conf
-ADD extraFiles/php.ini /usr/local/etc/php
+
+# 6) Production php.ini as the baseline, with our overrides layered in conf.d
+#    so the official defaults still apply underneath.
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+COPY extraFiles/zz-lamp.ini "$PHP_INI_DIR/conf.d/zz-lamp.ini"
 
 WORKDIR /var/www/html
 
-EXPOSE 80 443
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1/ | grep -qE '^[2345]' || exit 1
