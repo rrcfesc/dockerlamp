@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
-FROM php:8.4-apache
+FROM php:8.5-apache
 
 LABEL maintainer="rrcfesc@gmail.com" \
       org.opencontainers.image.source="https://github.com/rrcfesc/dockerlamp" \
-      org.opencontainers.image.description="LAMP base image for PHP 8.4 (Symfony / Sylius / Magento)" \
+      org.opencontainers.image.description="LAMP base image for PHP 8.5 (Symfony / Sylius / Magento)" \
       org.opencontainers.image.licenses="MIT"
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -15,7 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     COMPOSER_ALLOW_SUPERUSER=1 \
     NODE_MAJOR=24 \
     PECL_AMQP=2.2.0 \
-    PECL_MONGODB=2.4.1 \
+    PECL_MONGODB=2.5.2 \
     PECL_REDIS=6.3.0 \
     PECL_IMAGICK=3.8.1
 

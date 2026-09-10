@@ -2,11 +2,11 @@
 
 Base image for running PHP applications on Apache — built for Symfony, Sylius and Magento.
 
-One branch (and one tag) per PHP version. This is `PHP8.4`.
+One branch (and one tag) per PHP version. This is `PHP8.5`.
 
 ## What's in the image
 
-- **PHP 8.4** on Apache (`php:8.4-apache`, Debian 13)
+- **PHP 8.5** on Apache (`php:8.5-apache`, Debian 13)
   - Extensions: `bcmath` `bz2` `calendar` `exif` `ftp` `gd` `intl` `mysqli` `pdo_mysql`
     `pdo_pgsql` `pgsql` `soap` `xsl` `zip`, plus everything the official image already
     bundles (`curl` `dom` `mbstring` `opcache` `simplexml` `xml` …)
@@ -84,7 +84,7 @@ PHP settings**.
 > not be picked up** until you enable `dev.ini` below.
 
 ```dockerfile
-FROM rrcfesc/lamp:8.4
+FROM rrcfesc/lamp:8.5
 
 ARG USER_ID
 ARG GROUP_ID
@@ -128,7 +128,7 @@ JIT automatically — that is expected.
 
 ## Compiling other extensions
 
-The image keeps no build toolchain, but the underlying `php:8.4-apache` provides `gcc`,
+The image keeps no build toolchain, but the underlying `php:8.5-apache` provides `gcc`,
 `make`, `autoconf`, `phpize` and the PHP headers, so PECL extensions still build on top:
 
 ```dockerfile
