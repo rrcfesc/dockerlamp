@@ -1,0 +1,7 @@
+.git
+.gitignore
+.idea
+*.code-workspace
+.DS_Store
+README.md
+LICENSE
